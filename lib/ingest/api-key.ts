@@ -17,6 +17,29 @@ function extractKey(req: Request): string | null {
 }
 
 /** Pre-tenant lookup: this is where companyId is derived from the credential. */
+/**
+ * For the hosted complaint page. Resolves a public-form key to the company's
+ * display name and nothing else. Secret server keys never resolve here.
+ */
+export async function resolvePublicFormCompany(
+  rawKey: string
+): Promise<{ companyName: string } | null> {
+  if (!/^cmp_live_[A-Za-z0-9_-]{32}$/.test(rawKey)) return null;
+
+  const hash = createHash("sha256").update(rawKey).digest("hex");
+  const { data, error } = await supabaseAdmin
+    .from("api_keys")
+    .select("kind, companies!inner(name, is_active)")
+    .eq("key_hash", hash)
+    .eq("kind", "public_form")
+    .is("revoked_at", null)
+    .maybeSingle();
+
+  if (error || !data) return null;
+  const company = Array.isArray(data.companies) ? data.companies[0] : data.companies;
+  if (!company?.is_active) return null;
+  return { companyName: company.name };
+}
 export async function authenticateIngestKey(req: Request): Promise<IngestKey | null> {
   const raw = extractKey(req);
   if (!raw || raw.length < 20 || raw.length > 200) return null;
