@@ -13,6 +13,17 @@ const eslintConfig = defineConfig([
     "build/**",
     "next-env.d.ts",
   ]),
+  {
+  files: ["app/**/*.{ts,tsx}", "components/**/*.{ts,tsx}"],
+  rules: {
+    "no-restricted-imports": ["error", {
+      patterns: [{
+        group: ["@/lib/db/admin-client"],
+        message: "Use getTenantDb(). The raw client bypasses tenant isolation.",
+      }],
+    }],
+  },
+},
 ]);
 
 export default eslintConfig;
