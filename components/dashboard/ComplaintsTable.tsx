@@ -33,69 +33,71 @@ export function ComplaintsTable({
   return (
     <div className="overflow-hidden rounded-xl border bg-white">
       <div className="overflow-x-auto">
-        <table className="min-w-full divide-y divide-gray-200 text-sm">
+        <table className="w-full table-fixed divide-y divide-gray-200 text-sm">
           <thead className="bg-gray-50 text-left text-xs font-medium uppercase tracking-wide text-gray-500">
             <tr>
-              <th className="px-4 py-3">Received (IST)</th>
-              <th className="px-4 py-3">Customer</th>
-              <th className="px-4 py-3">Complaint</th>
-              <th className="px-4 py-3">Category</th>
-              <th className="px-4 py-3">Urgency</th>
-              <th className="px-4 py-3 text-right">Relevance</th>
-              <th className="px-4 py-3">Status</th>
-              <th className="hidden px-4 py-3 xl:table-cell">Suggested action</th>
-              <th className="px-4 py-3 text-right">Actions</th>
+              <th className="w-28 px-3 py-3">Received (IST)</th>
+              <th className="w-40 px-3 py-3">Customer</th>
+              <th className="w-1/3 px-3 py-3">Complaint</th>
+              <th className="w-28 px-3 py-3">Category</th>
+              <th className="w-28 px-3 py-3">Urgency / Score</th>
+              <th className="w-56 px-3 py-3">Suggested action</th>
+              <th className="w-40 px-3 py-3">Status & Actions</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-100">
             {rows.map((r) => (
               <tr key={r.id} className="align-top hover:bg-gray-50">
-                <td className="whitespace-nowrap px-4 py-3 text-gray-600">
+                <td className="px-3 py-3 text-xs text-gray-600">
                   {formatIST(r.created_at)}
                 </td>
-                <td className="px-4 py-3">
-                  <div className="text-gray-900">{r.customer_name ?? "-"}</div>
-                  <div className="text-xs text-gray-500">{r.customer_email}</div>
+                <td className="px-3 py-3 break-words">
+                  <div className="font-medium text-gray-900">{r.customer_name ?? "-"}</div>
+                  <div className="text-xs text-gray-500 break-all">{r.customer_email}</div>
                 </td>
-                <td className="max-w-sm px-4 py-3 text-gray-800">
-                  <p className="line-clamp-2">{r.raw_text}</p>
+                {/* Full complaint text wraps vertically instead of clamping to 2 lines */}
+                <td className="px-3 py-3 text-gray-800">
+                  <p className="whitespace-pre-wrap break-words">{r.raw_text}</p>
                 </td>
-                <td className="whitespace-nowrap px-4 py-3 text-gray-700">
+                <td className="px-3 py-3 text-xs text-gray-700 break-words">
                   {r.category_name ?? "-"}
                 </td>
-                <td className="px-4 py-3">
-                  <UrgencyBadge level={r.urgency_level} aiStatus={r.ai_status} />
+                <td className="px-3 py-3 space-y-1">
+                  <div>
+                    <UrgencyBadge level={r.urgency_level} aiStatus={r.ai_status} />
+                  </div>
+                  <div className="text-xs tabular-nums text-gray-500">
+                    Score: <span className="font-medium text-gray-700">{r.relevance_score ?? "-"}</span>/10
+                  </div>
                 </td>
-                <td className="px-4 py-3 text-right tabular-nums text-gray-700">
-                  {r.relevance_score ?? "-"}
+                {/* Full suggested action is always visible and wraps cleanly */}
+                <td className="px-3 py-3 text-xs text-gray-600">
+                  <p className="whitespace-pre-wrap break-words">{r.suggested_action ?? "-"}</p>
                 </td>
-                <td className="whitespace-nowrap px-4 py-3">
-                  <StatusBadge status={r.status} />
-                </td>
-                <td className="hidden max-w-xs px-4 py-3 text-xs text-gray-600 xl:table-cell">
-                  <p className="line-clamp-2">{r.suggested_action ?? "-"}</p>
-                </td>
-                <td className="whitespace-nowrap px-4 py-3 text-right">
-                  <div className="flex items-center justify-end gap-1.5">
+                <td className="px-3 py-3 space-y-2">
+                  <div>
+                    <StatusBadge status={r.status} />
+                  </div>
+                  <div className="flex flex-col gap-1.5">
                     {r.status !== "resolved" && (
                       <form action={updateComplaintStatusAction}>
                         <input type="hidden" name="id" value={r.id} />
                         <input type="hidden" name="status" value="resolved" />
                         <button
                           type="submit"
-                          className="rounded-md bg-emerald-600 px-2.5 py-1 text-xs font-medium text-white hover:bg-emerald-700"
+                          className="w-full rounded-md bg-emerald-600 px-2.5 py-1 text-xs font-medium text-white hover:bg-emerald-700"
                         >
-                          Resolve
+                          Mark Resolved
                         </button>
                       </form>
                     )}
-                    <form action={updateComplaintStatusAction} className="inline-flex gap-1">
+                    <form action={updateComplaintStatusAction} className="flex gap-1">
                       <input type="hidden" name="id" value={r.id} />
                       <select
                         name="status"
                         defaultValue={r.status}
                         aria-label="Change complaint status"
-                        className="rounded-md border bg-white px-2 py-1 text-xs text-gray-700"
+                        className="min-w-0 flex-1 rounded-md border bg-white px-1.5 py-1 text-xs text-gray-700"
                       >
                         {STATUSES.map((s) => (
                           <option key={s} value={s}>
