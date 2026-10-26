@@ -18,6 +18,8 @@ const schema = z.object({
 
 export type DashboardParams = z.infer<typeof schema>;
 
+
+
 export function parseDashboardParams(
   sp: Record<string, string | string[] | undefined>
 ): DashboardParams {
@@ -32,11 +34,16 @@ export function parseDashboardParams(
  * Call this AFTER awaiting searchParams, inside a Suspense'd component:
  * Next.js 16 doesn't allow reading the current time before request data.
  */
+// lib/dashboard/params.ts (replace rangeToDates)
+const IST_OFFSET_MS = (5 * 60 + 30) * 60 * 1000; // +05:30 in ms
+
 export function rangeToDates(range: (typeof RANGES)[number]) {
   const to = new Date();
-  const from = new Date(to);
-  from.setUTCDate(from.getUTCDate() - (RANGE_DAYS[range] - 1));
-  from.setUTCHours(0, 0, 0, 0); // start of the first UTC day, so trend buckets line up
+  // Shift epoch into IST wall-clock time, snap to 00:00:00, then shift back
+  const istWall = new Date(to.getTime() + IST_OFFSET_MS);
+  istWall.setUTCDate(istWall.getUTCDate() - (RANGE_DAYS[range] - 1));
+  istWall.setUTCHours(0, 0, 0, 0);
+  const from = new Date(istWall.getTime() - IST_OFFSET_MS);
   return { from, to };
 }
 

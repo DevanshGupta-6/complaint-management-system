@@ -74,8 +74,8 @@ export function ComplaintForm({ apiKey, companyName }: { apiKey: string; company
       const data = await res.json().catch(() => ({}));
 
       if (res.ok) {
-        // 202 = accepted, 200 = this exact attempt was already received
-        setReference(data.id ? String(data.id).slice(0, 8).toUpperCase() : null);
+        // Store the full UUID so the customer can track it
+        setReference(data.id ? String(data.id) : null);
         attemptId.current = "";
         setStatus("success");
         return;
@@ -109,19 +109,35 @@ export function ComplaintForm({ apiKey, companyName }: { apiKey: string; company
 
   if (status === "success") {
     return (
-      <div role="status" className="space-y-3 text-center">
+      <div role="status" className="space-y-4 text-center">
         <h1 className="text-xl font-semibold">Thank you</h1>
         <p className="text-sm text-gray-600">
           Your complaint has been sent to {companyName}.
         </p>
         {reference && (
-          <p className="text-sm text-gray-500">
-            Reference: <span className="font-mono font-medium text-gray-900">{reference}</span>
-          </p>
+          <div className="rounded-lg bg-gray-50 p-3 text-xs text-gray-600 space-y-1">
+            <p>Save your Tracking ID to check status updates:</p>
+            <p className="select-all font-mono text-sm font-semibold text-gray-900 break-all">
+              {reference}
+            </p>
+          </div>
         )}
-        <button onClick={reset} className="mt-2 rounded-lg border px-4 py-2 text-sm hover:bg-gray-50">
-          Submit another complaint
-        </button>
+        <div className="flex flex-col gap-2 sm:flex-row sm:justify-center">
+          {reference && (
+            <a
+              href={`/track?id=${encodeURIComponent(reference)}`}
+              className="rounded-lg bg-gray-900 px-4 py-2 text-sm font-medium text-white hover:bg-gray-800"
+            >
+              Track this complaint
+            </a>
+          )}
+          <button
+            onClick={reset}
+            className="rounded-lg border px-4 py-2 text-sm hover:bg-gray-50"
+          >
+            Submit another complaint
+          </button>
+        </div>
       </div>
     );
   }

@@ -41,8 +41,22 @@ const STATUS_LABELS: Record<ComplaintStatus, string> = {
   dismissed: "Dismissed",
 };
 
+// components/dashboard/ui.tsx (replace StatusBadge)
+const STATUS_STYLES: Record<ComplaintStatus, string> = {
+  new: "bg-blue-50 text-blue-700 ring-blue-200",
+  in_progress: "bg-purple-50 text-purple-700 ring-purple-200",
+  resolved: "bg-emerald-50 text-emerald-700 ring-emerald-200",
+  dismissed: "bg-gray-100 text-gray-600 ring-gray-200",
+};
+
 export function StatusBadge({ status }: { status: ComplaintStatus }) {
-  return <span className="text-xs text-gray-700">{STATUS_LABELS[status]}</span>;
+  return (
+    <span
+      className={`inline-flex rounded-full px-2 py-0.5 text-xs font-medium ring-1 ring-inset ${STATUS_STYLES[status]}`}
+    >
+      {STATUS_LABELS[status]}
+    </span>
+  );
 }
 
 export const statusLabel = (s: ComplaintStatus) => STATUS_LABELS[s];
